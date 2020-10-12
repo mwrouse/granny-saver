@@ -1,6 +1,7 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
+#include "Strings.h"
 #include "User_Config.h"
 #include "datatypes.h"
 
@@ -8,6 +9,9 @@
 
 #include "System.h"
 extern System sys;
+
+#include "Clock.h"
+extern Clock clock;
 
 void drawRAW(char *filename, int16_t x, int16_t y, int16_t rawWidth, int16_t rawHeight);
 
@@ -23,6 +27,7 @@ enum SCREEN_STATE
   Screen_Boot,
   Screen_Home,
   Screen_Menu,
+  Screen_SubMenu,
 };
 
 
@@ -43,6 +48,10 @@ class Screen {
     Screen(void);
     void init(void);
     void render(void);
+
+    // Allows things to force the change of the screen state
+    SCREEN_STATE getState(void);
+    void setState(SCREEN_STATE newState);
 
     void addMenuItem(String name, String description, void (*callbackFunction)(TFT_HX8357 tft, void (*onExit)(void)));
 

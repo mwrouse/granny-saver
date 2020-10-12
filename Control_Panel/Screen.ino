@@ -39,6 +39,23 @@ void Screen::init()
 
 
 /**
+ * Getter for the screen state
+ */
+SCREEN_STATE Screen::getState(void)
+{
+  return screenState;
+}
+
+/**
+ * Setter for the screen state
+ */
+void Screen::setState(SCREEN_STATE newState)
+{
+  screenState = newState;
+}
+
+
+/**
  * Renders the current screen
  */
 void Screen::render(void)
@@ -48,11 +65,14 @@ void Screen::render(void)
     long timeSinceBootDisplay = millis() - timeAtInit;
     if (timeSinceBootDisplay < BOOT_SCREEN_DELAY) {
       delay(BOOT_SCREEN_DELAY - timeSinceBootDisplay);
-      screenState = Screen_Menu; // TODO: Change back to Screen_Home;
+      screenState = Screen_Home; // TODO: Change back to Screen_Home;
       clearScreen();
     }
     return;
   }
+
+  if (screenState == Screen_Home)
+    sys.processControls(); // Do all the time, even between refreshes
 
   if (!((millis() - lastRefresh) >= REFRESH_RATE))
     return;
@@ -104,7 +124,11 @@ void Screen::renderHomeScreen()
   tft.setTextSize(3);
   tft.setTextColor(TFT_BLACK);
   tft.setCursor(380, 5);
-  tft.print(millis());
+
+  DateTime time = clock.getTime();
+  tft.print(time.twelveHour());
+  tft.print(":");
+  tft.print(time.minute());
 
 
   // Render icon based on system status
@@ -112,17 +136,18 @@ void Screen::renderHomeScreen()
   {
 
   }
-  else if (sys.getStatus() == System_On) {
-    drawRAW("lock.raw", 170, 70, 142, 217, tft);
-  }
-  else if (sys.getStatus() == System_Off)
-  {
-    drawRAW("unlocked.raw", 170, 70, 142, 217, tft);
-  }
-  else if (sys.getStatus() == System_AutoOn)
+  else if (sys.isAwaitingResume())
   {
 
   }
+  else if (sys.isOn()) {
+    drawRAW("lock.raw", 170, 70, 142, 217, tft);
+  }
+  else
+  {
+    drawRAW("unlocked.raw", 170, 70, 142, 217, tft);
+  }
+
 }
 
 
@@ -153,13 +178,20 @@ void Screen::renderMenu()
     return;
   }
 
+  tft.setTextColor(TFT_BLACK);
+
   // Fill screen if first time showing (makes refreshing the display look better)
   if (lastMenuItemSelected == -1) {
     tft.fillRect(0, 0, MENU_WIDTH, SCREEN_HEIGHT, MENU_BG_COLOR);
+
+    // Helper labels
+    tft.setTextSize(2);
+    tft.drawString(MENU_SELECT_LABEL, 5, 300, 1);
+    tft.drawString(MENU_EXIT_LABEL, 425, 300, 1);
   }
 
   tft.setTextSize(MENU_FONT_SIZE);
-  tft.setTextColor(TFT_BLACK);
+
 
 
   char buffer[20] = "";

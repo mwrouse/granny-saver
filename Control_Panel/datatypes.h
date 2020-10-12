@@ -2,8 +2,14 @@
 #define DATATYPES_H
 
 struct Time {
-  int Hour;
-  int Minute;
+  unsigned int Hour;
+  unsigned int Minute;
+};
+
+
+enum AlertMode {
+  AlertMode_Normal,
+  AlertMode_Continuous
 };
 
 
